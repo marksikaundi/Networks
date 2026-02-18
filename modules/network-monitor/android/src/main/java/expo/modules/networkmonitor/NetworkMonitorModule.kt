@@ -215,17 +215,14 @@ class NetworkMonitorModule : Module() {
     var txTotal = 0L
 
     for (config in getNetworkConfigs(network)) {
-      val stats = manager.querySummaryForDevice(config.type, config.subscriberId, startTime, endTime)
-      val bucket = NetworkStats.Bucket()
-      try {
-        while (stats.hasNextBucket()) {
-          stats.getNextBucket(bucket)
-          rxTotal += bucket.rxBytes
-          txTotal += bucket.txBytes
-        }
-      } finally {
-        stats.close()
-      }
+      val bucket = manager.querySummaryForDevice(
+        config.type,
+        config.subscriberId,
+        startTime,
+        endTime
+      )
+      rxTotal += bucket.rxBytes
+      txTotal += bucket.txBytes
     }
 
     return mapOf(
