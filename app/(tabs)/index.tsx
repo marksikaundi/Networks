@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { UsageAccessCard } from '@/components/usage-access-card';
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
 import { getMonitorColors, fonts, type MonitorColors } from '@/constants/monitor-theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -112,6 +113,10 @@ export default function MonitorScreen() {
           </StaggeredReveal>
 
           <StaggeredReveal index={1}>
+            <UsageAccessCard colors={colors} />
+          </StaggeredReveal>
+
+          <StaggeredReveal index={2}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Live Speed</Text>
@@ -150,7 +155,7 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={2}>
+          <StaggeredReveal index={3}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Apps Using Internet</Text>
@@ -207,7 +212,7 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={3}>
+          <StaggeredReveal index={4}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Android Setup</Text>
