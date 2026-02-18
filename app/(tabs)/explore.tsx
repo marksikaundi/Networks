@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MobileStatsBanner } from '@/components/mobile-stats-banner';
 import { PhoneStateAccessCard } from '@/components/phone-state-access-card';
 import { UsageAccessCard } from '@/components/usage-access-card';
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
@@ -33,15 +34,30 @@ export default function SummaryScreen() {
   const insets = useSafeAreaInsets();
   const { totals, wifi, mobile, topApps: liveTopApps, hourlyTotals, hasAccess } = useDailyUsage();
   const phonePermission = usePhoneStatePermission();
+  const showPhoneSettings =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    phonePermission.mobileStatsSupported &&
+    !phonePermission.phonePermissionGranted &&
+    phonePermission.permissionStatus === 'denied' &&
+    !phonePermission.canAskAgain;
   const showPhoneRequest =
     phonePermission.isAndroid &&
     phonePermission.isModuleAvailable &&
     phonePermission.mobileStatsSupported &&
-    !phonePermission.phonePermissionGranted;
+    !phonePermission.phonePermissionGranted &&
+    !showPhoneSettings;
   const showMobileLimit =
     phonePermission.isAndroid &&
     phonePermission.isModuleAvailable &&
     !phonePermission.mobileStatsSupported;
+  const mobileStatsStatus = phonePermission.isAndroid && phonePermission.isModuleAvailable
+    ? phonePermission.mobileStatsSupported
+      ? phonePermission.phonePermissionGranted
+        ? 'reporting'
+        : 'needs-permission'
+      : 'limited'
+    : null;
 
   const displayHourly = hourlyTotals.length === 12 ? hourlyTotals : [];
   const totalBytes = (totals?.rxBytes ?? 0) + (totals?.txBytes ?? 0);
@@ -83,8 +99,9 @@ export default function SummaryScreen() {
             <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
-          {(showPhoneRequest || showMobileLimit) && (
+          {(showPhoneSettings || showPhoneRequest || showMobileLimit) && (
             <StaggeredReveal index={2}>
+              {showPhoneSettings ? <PhoneStateAccessCard colors={colors} mode="settings" /> : null}
               {showPhoneRequest ? (
                 <PhoneStateAccessCard
                   colors={colors}
@@ -96,7 +113,13 @@ export default function SummaryScreen() {
             </StaggeredReveal>
           )}
 
-          <StaggeredReveal index={3}>
+          {mobileStatsStatus ? (
+            <StaggeredReveal index={3}>
+              <MobileStatsBanner colors={colors} status={mobileStatsStatus} />
+            </StaggeredReveal>
+          ) : null}
+
+          <StaggeredReveal index={4}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Today</Text>
@@ -143,7 +166,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={4}>
+          <StaggeredReveal index={5}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Hourly Usage</Text>
@@ -172,7 +195,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={5}>
+          <StaggeredReveal index={6}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Top Consumers</Text>
@@ -202,7 +225,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={6}>
+          <StaggeredReveal index={7}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Keep Data in Check</Text>

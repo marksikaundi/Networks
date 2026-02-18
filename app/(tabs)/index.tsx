@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MobileStatsBanner } from '@/components/mobile-stats-banner';
 import { PhoneStateAccessCard } from '@/components/phone-state-access-card';
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
 import { UsageAccessCard } from '@/components/usage-access-card';
@@ -84,15 +85,30 @@ export default function MonitorScreen() {
   const { speed, apps, hasAccess, windowMinutes } = useNetworkMonitor();
   const activeApps = apps.length > 0 ? apps : sampleApps;
   const phonePermission = usePhoneStatePermission();
+  const showPhoneSettings =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    phonePermission.mobileStatsSupported &&
+    !phonePermission.phonePermissionGranted &&
+    phonePermission.permissionStatus === 'denied' &&
+    !phonePermission.canAskAgain;
   const showPhoneRequest =
     phonePermission.isAndroid &&
     phonePermission.isModuleAvailable &&
     phonePermission.mobileStatsSupported &&
-    !phonePermission.phonePermissionGranted;
+    !phonePermission.phonePermissionGranted &&
+    !showPhoneSettings;
   const showMobileLimit =
     phonePermission.isAndroid &&
     phonePermission.isModuleAvailable &&
     !phonePermission.mobileStatsSupported;
+  const mobileStatsStatus = phonePermission.isAndroid && phonePermission.isModuleAvailable
+    ? phonePermission.mobileStatsSupported
+      ? phonePermission.phonePermissionGranted
+        ? 'reporting'
+        : 'needs-permission'
+      : 'limited'
+    : null;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -124,8 +140,9 @@ export default function MonitorScreen() {
             <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
-          {(showPhoneRequest || showMobileLimit) && (
+          {(showPhoneSettings || showPhoneRequest || showMobileLimit) && (
             <StaggeredReveal index={2}>
+              {showPhoneSettings ? <PhoneStateAccessCard colors={colors} mode="settings" /> : null}
               {showPhoneRequest ? (
                 <PhoneStateAccessCard
                   colors={colors}
@@ -137,7 +154,13 @@ export default function MonitorScreen() {
             </StaggeredReveal>
           )}
 
-          <StaggeredReveal index={3}>
+          {mobileStatsStatus ? (
+            <StaggeredReveal index={3}>
+              <MobileStatsBanner colors={colors} status={mobileStatsStatus} />
+            </StaggeredReveal>
+          ) : null}
+
+          <StaggeredReveal index={4}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Live Speed</Text>
@@ -176,7 +199,7 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={4}>
+          <StaggeredReveal index={5}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Apps Using Internet</Text>
@@ -232,7 +255,7 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={5}>
+          <StaggeredReveal index={6}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Android Setup</Text>

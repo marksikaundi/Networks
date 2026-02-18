@@ -29,6 +29,7 @@ type NetworkMonitorNativeModule = {
   queryAppUsage(startTime: number, endTime: number, network: NetworkType): Promise<AppUsage[]>;
   queryDeviceUsage(startTime: number, endTime: number, network: NetworkType): Promise<NetworkTotals>;
   requestPhoneStatePermission(): Promise<PermissionResponse>;
+  getPhoneStatePermissionStatus(): Promise<PermissionResponse>;
 };
 
 const NetworkMonitor = NativeModulesProxy.NetworkMonitor as NetworkMonitorNativeModule | undefined;
@@ -92,4 +93,11 @@ export async function requestPhoneStatePermission(): Promise<PermissionResponse 
     return null;
   }
   return NetworkMonitor.requestPhoneStatePermission();
+}
+
+export async function getPhoneStatePermissionStatus(): Promise<PermissionResponse | null> {
+  if (!NetworkMonitor) {
+    return null;
+  }
+  return NetworkMonitor.getPhoneStatePermissionStatus();
 }

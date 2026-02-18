@@ -1,15 +1,20 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import * as Linking from 'expo-linking';
 
 import { fonts, type MonitorColors } from '@/constants/monitor-theme';
 
 type PhoneStateAccessCardProps = {
   colors: MonitorColors;
-  mode: 'request' | 'limited';
+  mode: 'request' | 'limited' | 'settings';
   onRequest?: () => void;
 };
 
 export function PhoneStateAccessCard({ colors, mode, onRequest }: PhoneStateAccessCardProps) {
+  const openSettings = async () => {
+    await Linking.openSettings();
+  };
+
   if (mode === 'request') {
     return (
       <View style={[styles.card, { backgroundColor: colors.highlight, borderColor: colors.stroke }]}>
@@ -33,6 +38,34 @@ export function PhoneStateAccessCard({ colors, mode, onRequest }: PhoneStateAcce
         </Pressable>
         <Text style={[styles.helper, { color: colors.muted }]}>
           If denied, we will still show Wi-Fi and total device usage.
+        </Text>
+      </View>
+    );
+  }
+
+  if (mode === 'settings') {
+    return (
+      <View style={[styles.card, { backgroundColor: colors.highlight, borderColor: colors.stroke }]}>
+        <View style={styles.header}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.accentSoft }]}>
+            <MaterialIcons name="settings" size={18} color={colors.accent} />
+          </View>
+          <View style={styles.textWrap}>
+            <Text style={[styles.title, { color: colors.text }]}>Permission blocked</Text>
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
+              Phone permission is blocked. Open app settings to enable mobile data access.
+            </Text>
+          </View>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={openSettings}
+          style={[styles.button, { borderColor: colors.accent }]}>
+          <Text style={[styles.buttonText, { color: colors.accent }]}>Open app settings</Text>
+          <MaterialIcons name="chevron-right" size={18} color={colors.accent} />
+        </Pressable>
+        <Text style={[styles.helper, { color: colors.muted }]}>
+          Settings → Apps → Simple Network Monitor → Permissions.
         </Text>
       </View>
     );

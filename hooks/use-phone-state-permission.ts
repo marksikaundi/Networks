@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import {
+  getPhoneStatePermissionStatus,
   isMobileStatsSupported,
   isModuleAvailable,
   isPhoneStatePermissionGranted,
@@ -14,38 +15,56 @@ export type PhoneStatePermission = {
   isModuleAvailable: boolean;
   mobileStatsSupported: boolean;
   phonePermissionGranted: boolean;
+  permissionStatus: PermissionResponse['status'];
+  canAskAgain: boolean;
   requestPermission: () => Promise<PermissionResponse | null>;
 };
 
 export function usePhoneStatePermission(): PhoneStatePermission {
   const [phonePermissionGranted, setPhonePermissionGranted] = useState(false);
   const [mobileStatsSupported, setMobileStatsSupported] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionResponse['status']>('undetermined');
+  const [canAskAgain, setCanAskAgain] = useState(true);
   const isAndroid = Platform.OS === 'android';
   const moduleAvailable = isModuleAvailable();
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     if (!isAndroid || !moduleAvailable) {
       setPhonePermissionGranted(false);
       setMobileStatsSupported(false);
+      setPermissionStatus('undetermined');
+      setCanAskAgain(true);
       return;
     }
     setPhonePermissionGranted(isPhoneStatePermissionGranted());
     setMobileStatsSupported(isMobileStatsSupported());
+    try {
+      const status = await getPhoneStatePermissionStatus();
+      if (status) {
+        setPermissionStatus(status.status);
+        setCanAskAgain(status.canAskAgain);
+      }
+    } catch {
+      setPermissionStatus(isPhoneStatePermissionGranted() ? 'granted' : 'undetermined');
+      setCanAskAgain(true);
+    }
   }, [isAndroid, moduleAvailable]);
 
   useEffect(() => {
-    refresh();
+    void refresh();
     if (!isAndroid || !moduleAvailable) {
       return;
     }
 
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        refresh();
+        void refresh();
       }
     });
 
-    const interval = setInterval(refresh, 4000);
+    const interval = setInterval(() => {
+      void refresh();
+    }, 4000);
     return () => {
       subscription.remove();
       clearInterval(interval);
@@ -58,10 +77,10 @@ export function usePhoneStatePermission(): PhoneStatePermission {
     }
     try {
       const response = await requestPhoneStatePermission();
-      refresh();
+      void refresh();
       return response;
     } catch {
-      refresh();
+      void refresh();
       return null;
     }
   }, [isAndroid, moduleAvailable, refresh]);
@@ -72,8 +91,18 @@ export function usePhoneStatePermission(): PhoneStatePermission {
       isModuleAvailable: moduleAvailable,
       mobileStatsSupported,
       phonePermissionGranted,
+      permissionStatus,
+      canAskAgain,
       requestPermission,
     }),
-    [isAndroid, moduleAvailable, mobileStatsSupported, phonePermissionGranted, requestPermission]
+    [
+      canAskAgain,
+      isAndroid,
+      mobileStatsSupported,
+      moduleAvailable,
+      permissionStatus,
+      phonePermissionGranted,
+      requestPermission,
+    ]
   );
 }

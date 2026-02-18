@@ -60,6 +60,14 @@ class NetworkMonitorModule : Module() {
       )
     }
 
+    AsyncFunction("getPhoneStatePermissionStatus") { promise: Promise ->
+      Permissions.getPermissionsWithPermissionsManager(
+        appContext.permissions,
+        promise,
+        Manifest.permission.READ_PHONE_STATE
+      )
+    }
+
     AsyncFunction("queryAppUsage") { startTime: Double, endTime: Double, network: String ->
       if (!hasUsageAccess(context)) {
         throw UsageAccessDeniedException()
