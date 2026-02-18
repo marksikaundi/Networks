@@ -56,9 +56,14 @@ export function usePhoneStatePermission(): PhoneStatePermission {
     if (!isAndroid || !moduleAvailable) {
       return null;
     }
-    const response = await requestPhoneStatePermission();
-    refresh();
-    return response;
+    try {
+      const response = await requestPhoneStatePermission();
+      refresh();
+      return response;
+    } catch {
+      refresh();
+      return null;
+    }
   }, [isAndroid, moduleAvailable, refresh]);
 
   return useMemo(

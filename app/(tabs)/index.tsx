@@ -124,16 +124,18 @@ export default function MonitorScreen() {
             <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
-          <StaggeredReveal index={2}>
-            {showPhoneRequest ? (
-              <PhoneStateAccessCard
-                colors={colors}
-                mode="request"
-                onRequest={phonePermission.requestPermission}
-              />
-            ) : null}
-            {showMobileLimit ? <PhoneStateAccessCard colors={colors} mode="limited" /> : null}
-          </StaggeredReveal>
+          {(showPhoneRequest || showMobileLimit) && (
+            <StaggeredReveal index={2}>
+              {showPhoneRequest ? (
+                <PhoneStateAccessCard
+                  colors={colors}
+                  mode="request"
+                  onRequest={phonePermission.requestPermission}
+                />
+              ) : null}
+              {showMobileLimit ? <PhoneStateAccessCard colors={colors} mode="limited" /> : null}
+            </StaggeredReveal>
+          )}
 
           <StaggeredReveal index={3}>
             <View style={[styles.card, getCardStyle(colors)]}>

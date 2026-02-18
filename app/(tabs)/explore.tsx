@@ -32,6 +32,16 @@ export default function SummaryScreen() {
   const colors = useMemo(() => getMonitorColors(colorScheme), [colorScheme]);
   const insets = useSafeAreaInsets();
   const { totals, wifi, mobile, topApps: liveTopApps, hourlyTotals, hasAccess } = useDailyUsage();
+  const phonePermission = usePhoneStatePermission();
+  const showPhoneRequest =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    phonePermission.mobileStatsSupported &&
+    !phonePermission.phonePermissionGranted;
+  const showMobileLimit =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    !phonePermission.mobileStatsSupported;
 
   const displayHourly = hourlyTotals.length === 12 ? hourlyTotals : [];
   const totalBytes = (totals?.rxBytes ?? 0) + (totals?.txBytes ?? 0);
@@ -73,7 +83,20 @@ export default function SummaryScreen() {
             <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
-          <StaggeredReveal index={2}>
+          {(showPhoneRequest || showMobileLimit) && (
+            <StaggeredReveal index={2}>
+              {showPhoneRequest ? (
+                <PhoneStateAccessCard
+                  colors={colors}
+                  mode="request"
+                  onRequest={phonePermission.requestPermission}
+                />
+              ) : null}
+              {showMobileLimit ? <PhoneStateAccessCard colors={colors} mode="limited" /> : null}
+            </StaggeredReveal>
+          )}
+
+          <StaggeredReveal index={3}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Today</Text>
@@ -120,7 +143,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={3}>
+          <StaggeredReveal index={4}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Hourly Usage</Text>
@@ -149,7 +172,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={4}>
+          <StaggeredReveal index={5}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Top Consumers</Text>
@@ -179,7 +202,7 @@ export default function SummaryScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={5}>
+          <StaggeredReveal index={6}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Keep Data in Check</Text>
