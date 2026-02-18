@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type ComponentProps, useMemo } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -15,7 +15,15 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const hourlyUsage = [0.2, 0.4, 0.35, 0.6, 0.9, 0.75, 0.55, 0.8, 0.42, 0.28, 0.5, 0.7];
 
-const topApps = [
+type IconName = ComponentProps<typeof MaterialIcons>['name'];
+
+const topApps: Array<{
+  id: string;
+  name: string;
+  usage: number;
+  amount: string;
+  icon: IconName;
+}> = [
   { id: 'streamly', name: 'Streamly', usage: 0.74, amount: '640 MB', icon: 'play-circle-filled' },
   { id: 'chatspace', name: 'ChatSpace', usage: 0.46, amount: '120 MB', icon: 'chat-bubble' },
   { id: 'naviroute', name: 'NaviRoute', usage: 0.3, amount: '90 MB', icon: 'map' },

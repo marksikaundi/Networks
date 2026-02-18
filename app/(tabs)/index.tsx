@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { type ComponentProps, useEffect, useMemo, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -15,7 +15,19 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const sparkBars = [14, 20, 12, 26, 18, 30, 22, 34, 20, 26, 16, 24];
 
-const apps = [
+type IconName = ComponentProps<typeof MaterialIcons>['name'];
+
+const apps: Array<{
+  id: string;
+  name: string;
+  category: string;
+  down: number;
+  up: number;
+  data: string;
+  icon: IconName;
+  color: string;
+  active: boolean;
+}> = [
   {
     id: 'streamly',
     name: 'Streamly',
@@ -106,7 +118,7 @@ export default function MonitorScreen() {
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Live Speed</Text>
                 <View style={[styles.statusPill, { backgroundColor: colors.highlight }]}>
-                  <MaterialIcons name="network-cell" size={14} color={colors.accent} />
+                  <MaterialIcons name="signal-cellular-alt" size={14} color={colors.accent} />
                   <Text style={[styles.statusText, { color: colors.accent }]}>Mobile</Text>
                 </View>
               </View>
@@ -213,7 +225,7 @@ export default function MonitorScreen() {
                   <Text style={[styles.setupText, { color: colors.accent }]}>No account</Text>
                 </View>
                 <View style={[styles.setupBadge, { backgroundColor: colors.highlight }]}>
-                  <MaterialIcons name="shield" size={14} color={colors.accent} />
+                  <MaterialIcons name="verified-user" size={14} color={colors.accent} />
                   <Text style={[styles.setupText, { color: colors.accent }]}>On-device only</Text>
                 </View>
               </View>
