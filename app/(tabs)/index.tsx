@@ -1,98 +1,477 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { StaggeredReveal } from '@/components/ui/staggered-reveal';
+import { getMonitorColors, fonts, type MonitorColors } from '@/constants/monitor-theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function HomeScreen() {
+const sparkBars = [14, 20, 12, 26, 18, 30, 22, 34, 20, 26, 16, 24];
+
+const apps = [
+  {
+    id: 'streamly',
+    name: 'Streamly',
+    category: 'Video streaming',
+    down: 8.4,
+    up: 0.4,
+    data: '640 MB',
+    icon: 'play-circle-filled',
+    color: '#F2B261',
+    active: true,
+  },
+  {
+    id: 'chatspace',
+    name: 'ChatSpace',
+    category: 'Messaging',
+    down: 1.6,
+    up: 1.1,
+    data: '120 MB',
+    icon: 'chat-bubble',
+    color: '#6CD4CF',
+    active: true,
+  },
+  {
+    id: 'naviroute',
+    name: 'NaviRoute',
+    category: 'Maps & rides',
+    down: 0.8,
+    up: 0.3,
+    data: '90 MB',
+    icon: 'map',
+    color: '#8CA6F5',
+    active: true,
+  },
+  {
+    id: 'cloudsync',
+    name: 'CloudSync',
+    category: 'Backup',
+    down: 0.0,
+    up: 0.2,
+    data: '55 MB',
+    icon: 'cloud-upload',
+    color: '#73D29B',
+    active: false,
+  },
+];
+
+export default function MonitorScreen() {
+  const colorScheme = useColorScheme();
+  const colors = useMemo(() => getMonitorColors(colorScheme), [colorScheme]);
+  const [speed, setSpeed] = useState({ down: 14.8, up: 1.9 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSpeed((prev) => ({
+        down: Number(Math.max(1.2, prev.down + (Math.random() - 0.45) * 5.4).toFixed(1)),
+        up: Number(Math.max(0.3, prev.up + (Math.random() - 0.4) * 1.2).toFixed(1)),
+      }));
+    }, 1800);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+      <View style={styles.screen}>
+        <BackgroundGlow colors={colors} />
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
+          <StaggeredReveal index={0}>
+            <View style={styles.header}>
+              <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
+                <MaterialIcons name="security" size={14} color={colors.accent} />
+                <Text style={[styles.badgeText, { color: colors.accent }]}>
+                  Android-first, on-device
+                </Text>
+              </View>
+              <Text style={[styles.title, { color: colors.text }]}>Simple Network Monitor</Text>
+              <Text style={[styles.subtitle, { color: colors.muted }]}>
+                See which apps are using data right now. No account needed, everything stays on
+                your phone.
+              </Text>
+            </View>
+          </StaggeredReveal>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+          <StaggeredReveal index={1}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.cardHeader}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Live Speed</Text>
+                <View style={[styles.statusPill, { backgroundColor: colors.highlight }]}>
+                  <MaterialIcons name="network-cell" size={14} color={colors.accent} />
+                  <Text style={[styles.statusText, { color: colors.accent }]}>Mobile</Text>
+                </View>
+              </View>
+              <View style={styles.speedRow}>
+                <View style={styles.speedBlock}>
+                  <Text style={[styles.metricLabel, { color: colors.muted }]}>Download</Text>
+                  <Text style={[styles.metricValue, { color: colors.text }]}>
+                    {speed.down}
+                    <Text style={[styles.metricUnit, { color: colors.muted }]}> Mbps</Text>
+                  </Text>
+                </View>
+                <View style={styles.speedBlock}>
+                  <Text style={[styles.metricLabel, { color: colors.muted }]}>Upload</Text>
+                  <Text style={[styles.metricValue, { color: colors.text }]}>
+                    {speed.up}
+                    <Text style={[styles.metricUnit, { color: colors.muted }]}> Mbps</Text>
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.sparkline}>
+                {sparkBars.map((height, index) => (
+                  <View
+                    key={`bar-${index}`}
+                    style={[
+                      styles.sparkBar,
+                      { height, backgroundColor: index % 3 ? colors.accent : colors.accentWarm },
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          </StaggeredReveal>
+
+          <StaggeredReveal index={2}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.cardHeader}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Apps Using Internet</Text>
+                <Text style={[styles.cardMeta, { color: colors.muted }]}>Active now</Text>
+              </View>
+              {apps.map((app, index) => (
+                <View
+                  key={app.id}
+                  style={[
+                    styles.appRow,
+                    index === apps.length - 1 ? styles.appRowLast : null,
+                  ]}>
+                  <View style={styles.appInfo}>
+                    <View style={[styles.appIcon, { backgroundColor: app.color }]}>
+                      <MaterialIcons name={app.icon} size={18} color="#0E1C20" />
+                    </View>
+                    <View>
+                      <Text style={[styles.appName, { color: colors.text }]}>{app.name}</Text>
+                      <Text style={[styles.appCategory, { color: colors.muted }]}>
+                        {app.category}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.appMeta}>
+                    <View style={styles.appStatusRow}>
+                      <View
+                        style={[
+                          styles.statusDot,
+                          { backgroundColor: app.active ? colors.good : colors.stroke },
+                        ]}
+                      />
+                      <Text style={[styles.appStatus, { color: colors.muted }]}>
+                        {app.active ? 'Active' : 'Idle'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.appSpeed, { color: colors.text }]}>
+                      {app.down.toFixed(1)} down · {app.up.toFixed(1)} up
+                    </Text>
+                    <Text style={[styles.appData, { color: colors.muted }]}>
+                      Today {app.data}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+              <View style={styles.cardFooter}>
+                <Text style={[styles.footerText, { color: colors.muted }]}>
+                  Most people do not know which apps drain data.
+                </Text>
+                <View style={[styles.cta, { borderColor: colors.accent }]}>
+                  <Text style={[styles.ctaText, { color: colors.accent }]}>View all apps</Text>
+                  <MaterialIcons name="chevron-right" size={16} color={colors.accent} />
+                </View>
+              </View>
+            </View>
+          </StaggeredReveal>
+
+          <StaggeredReveal index={3}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.cardHeader}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Android Setup</Text>
+                <MaterialIcons name="settings" size={18} color={colors.muted} />
+              </View>
+              <Text style={[styles.bodyText, { color: colors.muted }]}>
+                Grant Usage Access to show per-app network stats and background usage. All data
+                stays on your device.
+              </Text>
+              <View style={styles.setupRow}>
+                <View style={[styles.setupBadge, { backgroundColor: colors.highlight }]}>
+                  <MaterialIcons name="lock" size={14} color={colors.accent} />
+                  <Text style={[styles.setupText, { color: colors.accent }]}>No account</Text>
+                </View>
+                <View style={[styles.setupBadge, { backgroundColor: colors.highlight }]}>
+                  <MaterialIcons name="shield" size={14} color={colors.accent} />
+                  <Text style={[styles.setupText, { color: colors.accent }]}>On-device only</Text>
+                </View>
+              </View>
+            </View>
+          </StaggeredReveal>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
+function BackgroundGlow({ colors }: { colors: MonitorColors }) {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View style={[styles.orb, styles.orbPrimary, { backgroundColor: colors.accentSoft }]} />
+      <View
+        style={[
+          styles.orb,
+          styles.orbSecondary,
+          { backgroundColor: colors.accentWarm, opacity: 0.32 },
+        ]}
+      />
+      <View style={[styles.orb, styles.orbTertiary, { backgroundColor: colors.highlight }]} />
+    </View>
+  );
+}
+
+const getCardStyle = (colors: MonitorColors): ViewStyle => ({
+  backgroundColor: colors.card,
+  borderColor: colors.stroke,
+  shadowColor: colors.shadow,
+});
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  safe: {
+    flex: 1,
+  },
+  screen: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 32,
+    gap: 20,
+  },
+  header: {
+    gap: 12,
+  },
+  badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  badgeText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    letterSpacing: 0.2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  title: {
+    fontSize: 32,
+    lineHeight: 36,
+    fontFamily: fonts.title,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: fonts.body,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    shadowOpacity: 0.15,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+    gap: 14,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontFamily: fonts.title,
+  },
+  cardMeta: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  speedRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  speedBlock: {
+    gap: 6,
+  },
+  metricLabel: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  metricValue: {
+    fontSize: 30,
+    fontFamily: fonts.title,
+  },
+  metricUnit: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+  },
+  sparkline: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 6,
+    marginTop: 4,
+  },
+  sparkBar: {
+    width: 6,
+    borderRadius: 999,
+  },
+  appRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(120, 130, 135, 0.18)',
+  },
+  appRowLast: {
+    borderBottomWidth: 0,
+  },
+  appInfo: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  appIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appName: {
+    fontSize: 16,
+    fontFamily: fonts.body,
+  },
+  appCategory: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  appMeta: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  appStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  appStatus: {
+    fontSize: 11,
+    fontFamily: fonts.body,
+  },
+  appSpeed: {
+    fontSize: 13,
+    fontFamily: fonts.mono,
+  },
+  appData: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  cardFooter: {
+    marginTop: 6,
+    gap: 10,
+  },
+  footerText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+  },
+  cta: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  ctaText: {
+    fontSize: 13,
+    fontFamily: fonts.body,
+  },
+  bodyText: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontFamily: fonts.body,
+  },
+  setupRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  setupBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  setupText: {
+    fontSize: 12,
+    fontFamily: fonts.body,
+  },
+  orb: {
     position: 'absolute',
+    borderRadius: 999,
+  },
+  orbPrimary: {
+    width: 260,
+    height: 260,
+    top: -80,
+    right: -80,
+  },
+  orbSecondary: {
+    width: 220,
+    height: 220,
+    bottom: 160,
+    left: -80,
+  },
+  orbTertiary: {
+    width: 160,
+    height: 160,
+    bottom: -40,
+    right: -30,
   },
 });
