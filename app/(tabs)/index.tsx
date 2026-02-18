@@ -1,13 +1,7 @@
 import { type ComponentProps, useEffect, useMemo, useState } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
 import { getMonitorColors, fonts, type MonitorColors } from '@/constants/monitor-theme';
@@ -78,6 +72,7 @@ export default function MonitorScreen() {
   const colorScheme = useColorScheme();
   const colors = useMemo(() => getMonitorColors(colorScheme), [colorScheme]);
   const [speed, setSpeed] = useState({ down: 14.8, up: 1.9 });
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,7 +90,10 @@ export default function MonitorScreen() {
       <View style={styles.screen}>
         <BackgroundGlow colors={colors} />
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: Math.max(insets.top + 4, 20) },
+          ]}
           showsVerticalScrollIndicator={false}>
           <StaggeredReveal index={0}>
             <View style={styles.header}>
