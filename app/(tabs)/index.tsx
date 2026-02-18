@@ -1,24 +1,28 @@
-import { type ComponentProps, useEffect, useMemo, useState } from 'react';
+import { type ComponentProps, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { UsageAccessCard } from '@/components/usage-access-card';
+import { PhoneStateAccessCard } from '@/components/phone-state-access-card';
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
+import { UsageAccessCard } from '@/components/usage-access-card';
 import { getMonitorColors, fonts, type MonitorColors } from '@/constants/monitor-theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useNetworkMonitor } from '@/hooks/use-network-monitor';
+import { usePhoneStatePermission } from '@/hooks/use-phone-state-permission';
 
 const sparkBars = [14, 20, 12, 26, 18, 30, 22, 34, 20, 26, 16, 24];
 
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
-const apps: Array<{
+const sampleApps: Array<{
   id: string;
   name: string;
   category: string;
   down: number;
   up: number;
   data: string;
+  dataContext: string;
   icon: IconName;
   color: string;
   active: boolean;
@@ -30,6 +34,7 @@ const apps: Array<{
     down: 8.4,
     up: 0.4,
     data: '640 MB',
+    dataContext: 'Today',
     icon: 'play-circle-filled',
     color: '#F2B261',
     active: true,
@@ -41,6 +46,7 @@ const apps: Array<{
     down: 1.6,
     up: 1.1,
     data: '120 MB',
+    dataContext: 'Today',
     icon: 'chat-bubble',
     color: '#6CD4CF',
     active: true,
@@ -52,6 +58,7 @@ const apps: Array<{
     down: 0.8,
     up: 0.3,
     data: '90 MB',
+    dataContext: 'Today',
     icon: 'map',
     color: '#8CA6F5',
     active: true,
@@ -63,6 +70,7 @@ const apps: Array<{
     down: 0.0,
     up: 0.2,
     data: '55 MB',
+    dataContext: 'Today',
     icon: 'cloud-upload',
     color: '#73D29B',
     active: false,
@@ -72,19 +80,19 @@ const apps: Array<{
 export default function MonitorScreen() {
   const colorScheme = useColorScheme();
   const colors = useMemo(() => getMonitorColors(colorScheme), [colorScheme]);
-  const [speed, setSpeed] = useState({ down: 14.8, up: 1.9 });
   const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSpeed((prev) => ({
-        down: Number(Math.max(1.2, prev.down + (Math.random() - 0.45) * 5.4).toFixed(1)),
-        up: Number(Math.max(0.3, prev.up + (Math.random() - 0.4) * 1.2).toFixed(1)),
-      }));
-    }, 1800);
-
-    return () => clearInterval(interval);
-  }, []);
+  const { speed, apps, hasAccess, windowMinutes } = useNetworkMonitor();
+  const activeApps = apps.length > 0 ? apps : sampleApps;
+  const phonePermission = usePhoneStatePermission();
+  const showPhoneRequest =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    phonePermission.mobileStatsSupported &&
+    !phonePermission.phonePermissionGranted;
+  const showMobileLimit =
+    phonePermission.isAndroid &&
+    phonePermission.isModuleAvailable &&
+    !phonePermission.mobileStatsSupported;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -113,10 +121,21 @@ export default function MonitorScreen() {
           </StaggeredReveal>
 
           <StaggeredReveal index={1}>
-            <UsageAccessCard colors={colors} />
+            <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
           <StaggeredReveal index={2}>
+            {showPhoneRequest ? (
+              <PhoneStateAccessCard
+                colors={colors}
+                mode="request"
+                onRequest={phonePermission.requestPermission}
+              />
+            ) : null}
+            {showMobileLimit ? <PhoneStateAccessCard colors={colors} mode="limited" /> : null}
+          </StaggeredReveal>
+
+          <StaggeredReveal index={3}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Live Speed</Text>
@@ -155,19 +174,18 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={3}>
+          <StaggeredReveal index={4}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Apps Using Internet</Text>
-                <Text style={[styles.cardMeta, { color: colors.muted }]}>Active now</Text>
+                <Text style={[styles.cardMeta, { color: colors.muted }]}>
+                  {apps.length > 0 ? `Last ${windowMinutes} min` : 'Active now'}
+                </Text>
               </View>
-              {apps.map((app, index) => (
+              {activeApps.map((app, index) => (
                 <View
                   key={app.id}
-                  style={[
-                    styles.appRow,
-                    index === apps.length - 1 ? styles.appRowLast : null,
-                  ]}>
+                  style={[styles.appRow, index === activeApps.length - 1 ? styles.appRowLast : null]}>
                   <View style={styles.appInfo}>
                     <View style={[styles.appIcon, { backgroundColor: app.color }]}>
                       <MaterialIcons name={app.icon} size={18} color="#0E1C20" />
@@ -195,7 +213,7 @@ export default function MonitorScreen() {
                       {app.down.toFixed(1)} down · {app.up.toFixed(1)} up
                     </Text>
                     <Text style={[styles.appData, { color: colors.muted }]}>
-                      Today {app.data}
+                      {app.dataContext} {app.data}
                     </Text>
                   </View>
                 </View>
@@ -212,7 +230,7 @@ export default function MonitorScreen() {
             </View>
           </StaggeredReveal>
 
-          <StaggeredReveal index={4}>
+          <StaggeredReveal index={5}>
             <View style={[styles.card, getCardStyle(colors)]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Android Setup</Text>

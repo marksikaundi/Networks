@@ -3,10 +3,13 @@ import { ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { PhoneStateAccessCard } from '@/components/phone-state-access-card';
 import { UsageAccessCard } from '@/components/usage-access-card';
 import { StaggeredReveal } from '@/components/ui/staggered-reveal';
 import { getMonitorColors, fonts, type MonitorColors } from '@/constants/monitor-theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useDailyUsage } from '@/hooks/use-daily-usage';
+import { usePhoneStatePermission } from '@/hooks/use-phone-state-permission';
 
 const hourlyUsage = [0.2, 0.4, 0.35, 0.6, 0.9, 0.75, 0.55, 0.8, 0.42, 0.28, 0.5, 0.7];
 
@@ -28,6 +31,20 @@ export default function SummaryScreen() {
   const colorScheme = useColorScheme();
   const colors = useMemo(() => getMonitorColors(colorScheme), [colorScheme]);
   const insets = useSafeAreaInsets();
+  const { totals, wifi, mobile, topApps: liveTopApps, hourlyTotals, hasAccess } = useDailyUsage();
+
+  const displayHourly = hourlyTotals.length === 12 ? hourlyTotals : [];
+  const totalBytes = (totals?.rxBytes ?? 0) + (totals?.txBytes ?? 0);
+  const wifiBytes = (wifi?.rxBytes ?? 0) + (wifi?.txBytes ?? 0);
+  const mobileBytes = (mobile?.rxBytes ?? 0) + (mobile?.txBytes ?? 0);
+
+  const displayTopApps = liveTopApps.length > 0 ? toTopApps(liveTopApps) : topApps;
+
+  const chartValues =
+    displayHourly.length > 0 ? displayHourly : hourlyUsage.map((value) => value * 1_000_000);
+
+  const peakLabel = getPeakLabel(chartValues);
+  const mobileShare = totalBytes > 0 ? Math.round((mobileBytes / totalBytes) * 100) : 0;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -53,7 +70,7 @@ export default function SummaryScreen() {
           </StaggeredReveal>
 
           <StaggeredReveal index={1}>
-            <UsageAccessCard colors={colors} />
+            <UsageAccessCard colors={colors} visible={!hasAccess} />
           </StaggeredReveal>
 
           <StaggeredReveal index={2}>
@@ -62,26 +79,42 @@ export default function SummaryScreen() {
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Today</Text>
                 <Text style={[styles.cardMeta, { color: colors.muted }]}>Updated now</Text>
               </View>
-              <Text style={[styles.totalValue, { color: colors.text }]}>1.8 GB</Text>
-              <Text style={[styles.totalLabel, { color: colors.muted }]}>Total data used</Text>
+              <Text style={[styles.totalValue, { color: colors.text }]}>
+                {totalBytes > 0 ? formatBytes(totalBytes) : '1.8 GB'}
+              </Text>
+              <Text style={[styles.totalLabel, { color: colors.muted }]}>
+                Total data used
+              </Text>
               <View style={styles.statRow}>
                 <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
-                  <Text style={[styles.statValue, { color: colors.text }]}>1.3 GB</Text>
-                  <Text style={[styles.statLabel, { color: colors.muted }]}>Mobile</Text>
+                  <Text style={[styles.statValue, { color: colors.text }]}>
+                    {mobileBytes > 0 ? formatBytes(mobileBytes) : '1.3 GB'}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.muted }]}>
+                    Mobile
+                  </Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: colors.highlight }]}>
-                  <Text style={[styles.statValue, { color: colors.text }]}>0.5 GB</Text>
-                  <Text style={[styles.statLabel, { color: colors.muted }]}>Wi-Fi</Text>
+                  <Text style={[styles.statValue, { color: colors.text }]}>
+                    {wifiBytes > 0 ? formatBytes(wifiBytes) : '0.5 GB'}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.muted }]}>
+                    Wi-Fi
+                  </Text>
                 </View>
               </View>
               <View style={styles.statRow}>
                 <View style={styles.inlineStat}>
                   <MaterialIcons name="schedule" size={16} color={colors.accent} />
-                  <Text style={[styles.inlineText, { color: colors.muted }]}>Peak 6-8 PM</Text>
+                  <Text style={[styles.inlineText, { color: colors.muted }]}>
+                    Peak {peakLabel ?? '6-8 PM'}
+                  </Text>
                 </View>
                 <View style={styles.inlineStat}>
                   <MaterialIcons name="wifi" size={16} color={colors.accent} />
-                  <Text style={[styles.inlineText, { color: colors.muted }]}>79% on mobile</Text>
+                  <Text style={[styles.inlineText, { color: colors.muted }]}>
+                    {mobileShare > 0 ? `${mobileShare}% on mobile` : '79% on mobile'}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -94,13 +127,13 @@ export default function SummaryScreen() {
                 <Text style={[styles.cardMeta, { color: colors.muted }]}>12 hours</Text>
               </View>
               <View style={styles.chart}>
-                {hourlyUsage.map((value, index) => (
+                {chartValues.map((value, index) => (
                   <View key={`hour-${index}`} style={styles.chartBarWrap}>
                     <View
                       style={[
                         styles.chartBar,
                         {
-                          height: 26 + value * 70,
+                          height: 26 + normalizeChartValue(value, chartValues) * 70,
                           backgroundColor: index % 3 === 0 ? colors.accentWarm : colors.accent,
                         },
                       ]}
@@ -122,7 +155,7 @@ export default function SummaryScreen() {
                 <Text style={[styles.cardTitle, { color: colors.text }]}>Top Consumers</Text>
                 <MaterialIcons name="trending-up" size={18} color={colors.muted} />
               </View>
-              {topApps.map((app) => (
+              {displayTopApps.map((app) => (
                 <View key={app.id} style={styles.topAppRow}>
                   <View style={styles.topAppHeader}>
                     <View style={styles.topAppTitle}>
@@ -383,3 +416,67 @@ const styles = StyleSheet.create({
     right: -30,
   },
 });
+
+const formatBytes = (bytes: number) => {
+  if (bytes >= 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  }
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
+  }
+  if (bytes >= 1024) {
+    return `${(bytes / 1024).toFixed(0)} KB`;
+  }
+  return `${Math.max(0, Math.round(bytes))} B`;
+};
+
+const normalizeChartValue = (value: number, values: number[]) => {
+  const max = Math.max(...values);
+  if (max === 0) {
+    return 0.1;
+  }
+  return value / max;
+};
+
+const toTopApps = (apps: Array<{ packageName: string; rxBytes: number; txBytes: number }>) => {
+  const max = Math.max(...apps.map((app) => app.rxBytes + app.txBytes), 1);
+  return apps.map((app) => ({
+    id: app.packageName,
+    name: formatPackageName(app.packageName),
+    usage: (app.rxBytes + app.txBytes) / max,
+    amount: formatBytes(app.rxBytes + app.txBytes),
+    icon: 'apps' as IconName,
+  }));
+};
+
+const formatPackageName = (packageName: string) => {
+  const last = packageName.split('.').pop() ?? packageName;
+  return last
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const getPeakLabel = (values: number[]) => {
+  if (values.length === 0) {
+    return null;
+  }
+  const maxValue = Math.max(...values);
+  if (maxValue === 0) {
+    return null;
+  }
+  const index = values.findIndex((value) => value === maxValue);
+  if (index < 0) {
+    return null;
+  }
+  const now = new Date();
+  const start = new Date(now.getTime() - (values.length - 1 - index) * 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return `${formatHour(start)}-${formatHour(end)}`;
+};
+
+const formatHour = (date: Date) => {
+  const hours = date.getHours();
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const normalized = hours % 12 || 12;
+  return `${normalized} ${period}`;
+};

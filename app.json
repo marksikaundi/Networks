@@ -20,10 +20,12 @@
       },
       "permissions": [
         "android.permission.PACKAGE_USAGE_STATS",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.READ_PHONE_STATE"
       ],
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.luplegstudios.networks"
     },
     "web": {
       "output": "static",

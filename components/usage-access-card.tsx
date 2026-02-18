@@ -4,8 +4,14 @@ import * as Linking from 'expo-linking';
 
 import { fonts, type MonitorColors } from '@/constants/monitor-theme';
 
-export function UsageAccessCard({ colors }: { colors: MonitorColors }) {
-  if (Platform.OS !== 'android') {
+export function UsageAccessCard({
+  colors,
+  visible = true,
+}: {
+  colors: MonitorColors;
+  visible?: boolean;
+}) {
+  if (Platform.OS !== 'android' || !visible) {
     return null;
   }
 

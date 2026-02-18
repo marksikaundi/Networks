@@ -1,0 +1,17 @@
+{
+  "name": "@local/network-monitor",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "keywords": [
+    "expo",
+    "android",
+    "network",
+    "usage"
+  ],
+  "peerDependencies": {
+    "expo-modules-core": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}
