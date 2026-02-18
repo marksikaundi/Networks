@@ -61,7 +61,11 @@ const colorPool = [
   '#9CCB64',
 ];
 
-const formatLabel = (packageName: string) => {
+const formatLabel = (appName: string | undefined, packageName: string) => {
+  const normalizedAppName = appName?.trim();
+  if (normalizedAppName) {
+    return normalizedAppName;
+  }
   const last = packageName.split('.').pop() ?? packageName;
   return last
     .replace(/[-_]/g, ' ')
@@ -220,7 +224,7 @@ export function useNetworkMonitor() {
 }
 
 const mapUsageToRows = (data: AppUsage[], windowMs: number): MonitorAppRow[] =>
-  data.slice(0, 6).map((app) => {
+  data.map((app) => {
     const totalBytes = app.rxBytes + app.txBytes;
     const downMbps = bytesToMbps(app.rxBytes, windowMs);
     const upMbps = bytesToMbps(app.txBytes, windowMs);
@@ -228,7 +232,7 @@ const mapUsageToRows = (data: AppUsage[], windowMs: number): MonitorAppRow[] =>
 
     return {
       id: app.packageName,
-      name: formatLabel(app.packageName),
+      name: formatLabel(app.appName, app.packageName),
       category: app.packageName,
       down: Number(downMbps.toFixed(1)),
       up: Number(upMbps.toFixed(1)),

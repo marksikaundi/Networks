@@ -16,7 +16,7 @@ const sparkBars = [14, 20, 12, 26, 18, 30, 22, 34, 20, 26, 16, 24];
 
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
-const sampleApps: Array<{
+const sampleApps: {
   id: string;
   name: string;
   category: string;
@@ -27,7 +27,7 @@ const sampleApps: Array<{
   icon: IconName;
   color: string;
   active: boolean;
-}> = [
+}[] = [
   {
     id: 'streamly',
     name: 'Streamly',

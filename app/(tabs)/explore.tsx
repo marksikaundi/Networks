@@ -16,13 +16,13 @@ const hourlyUsage = [0.2, 0.4, 0.35, 0.6, 0.9, 0.75, 0.55, 0.8, 0.42, 0.28, 0.5,
 
 type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
-const topApps: Array<{
+const topApps: {
   id: string;
   name: string;
   usage: number;
   amount: string;
   icon: IconName;
-}> = [
+}[] = [
   { id: 'streamly', name: 'Streamly', usage: 0.74, amount: '640 MB', icon: 'play-circle-filled' },
   { id: 'chatspace', name: 'ChatSpace', usage: 0.46, amount: '120 MB', icon: 'chat-bubble' },
   { id: 'naviroute', name: 'NaviRoute', usage: 0.3, amount: '90 MB', icon: 'map' },
@@ -484,18 +484,24 @@ const normalizeChartValue = (value: number, values: number[]) => {
   return value / max;
 };
 
-const toTopApps = (apps: Array<{ packageName: string; rxBytes: number; txBytes: number }>) => {
+const toTopApps = (
+  apps: { packageName: string; appName?: string; rxBytes: number; txBytes: number }[]
+) => {
   const max = Math.max(...apps.map((app) => app.rxBytes + app.txBytes), 1);
   return apps.map((app) => ({
     id: app.packageName,
-    name: formatPackageName(app.packageName),
+    name: formatPackageName(app.appName, app.packageName),
     usage: (app.rxBytes + app.txBytes) / max,
     amount: formatBytes(app.rxBytes + app.txBytes),
     icon: 'apps' as IconName,
   }));
 };
 
-const formatPackageName = (packageName: string) => {
+const formatPackageName = (appName: string | undefined, packageName: string) => {
+  const normalizedAppName = appName?.trim();
+  if (normalizedAppName) {
+    return normalizedAppName;
+  }
   const last = packageName.split('.').pop() ?? packageName;
   return last
     .replace(/[-_]/g, ' ')

@@ -163,6 +163,27 @@ class NetworkMonitorModule : Module() {
   }
 
   private data class UsageTotals(var rxBytes: Long = 0, var txBytes: Long = 0)
+  private data class AppIdentity(val packageName: String, val appName: String)
+
+  private fun resolveAppIdentity(packageManager: PackageManager, uid: Int): AppIdentity? {
+    val packages = packageManager.getPackagesForUid(uid)?.toList().orEmpty()
+    if (packages.isEmpty()) {
+      return null
+    }
+
+    // Show user-facing apps only.
+    val packageName = packages.firstOrNull { candidate ->
+      packageManager.getLaunchIntentForPackage(candidate) != null
+    } ?: return null
+
+    return try {
+      val appInfo = packageManager.getApplicationInfo(packageName, 0)
+      val label = appInfo.loadLabel(packageManager).toString().trim()
+      AppIdentity(packageName, if (label.isNotEmpty()) label else packageName)
+    } catch (_: PackageManager.NameNotFoundException) {
+      AppIdentity(packageName, packageName)
+    }
+  }
 
   private fun queryAppUsageInternal(
     manager: NetworkStatsManager,
@@ -192,11 +213,12 @@ class NetworkMonitorModule : Module() {
     }
 
     val packageManager = context.packageManager
-    return totalsByUid.map { (uid, totals) ->
-      val packageName = packageManager.getPackagesForUid(uid)?.firstOrNull() ?: "uid:$uid"
+    return totalsByUid.mapNotNull { (uid, totals) ->
+      val identity = resolveAppIdentity(packageManager, uid) ?: return@mapNotNull null
       mapOf(
         "uid" to uid,
-        "packageName" to packageName,
+        "packageName" to identity.packageName,
+        "appName" to identity.appName,
         "rxBytes" to totals.rxBytes.toDouble(),
         "txBytes" to totals.txBytes.toDouble()
       )

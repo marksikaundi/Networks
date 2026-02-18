@@ -89,7 +89,7 @@ export function useDailyUsage() {
         setTotals(totalData);
         setWifi(wifiData);
         setMobile(mobileData);
-        setTopApps(appData.slice(0, 3));
+        setTopApps(appData);
       } catch {
         if (mounted) {
           setTotals(null);

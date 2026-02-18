@@ -15,6 +15,7 @@ export type PermissionResponse = {
 export type AppUsage = {
   uid: number;
   packageName: string;
+  appName?: string;
   rxBytes: number;
   txBytes: number;
 };
