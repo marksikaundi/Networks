@@ -44,108 +44,120 @@ export default function AboutUsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.screen}>
         <BackgroundGlow colors={colors} />
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top + 4, 20) }]}
-        showsVerticalScrollIndicator={false}>
-        <StaggeredReveal index={0}>
-          <View style={[styles.heroCard, getCardStyle(colors)]}>
-            <View style={styles.header}>
-              <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
-                <MaterialIcons name="info-outline" size={14} color={colors.accent} />
-                <Text style={[styles.badgeText, { color: colors.accent }]}>About us</Text>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top + 4, 20) }]}
+          showsVerticalScrollIndicator={false}>
+          <StaggeredReveal index={0}>
+            <View style={[styles.heroCard, getCardStyle(colors)]}>
+              <View style={styles.header}>
+                <View style={[styles.badge, { backgroundColor: colors.accentSoft }]}>
+                  <MaterialIcons name="info-outline" size={14} color={colors.accent} />
+                  <Text style={[styles.badgeText, { color: colors.accent }]}>About us</Text>
+                </View>
+                <Text style={[styles.title, { color: colors.text }]}>Networks</Text>
+                <Text style={[styles.subtitle, { color: colors.muted }]}>
+                  Professional, privacy-first network visibility for everyday mobile users.
+                </Text>
               </View>
-              <Text style={[styles.title, { color: colors.text }]}>Networks</Text>
-              <Text style={[styles.subtitle, { color: colors.muted }]}>
-                Professional, privacy-first network visibility for everyday mobile users.
+              <View style={styles.heroStatsRow}>
+                <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
+                  <Text style={[styles.heroStatValue, { color: colors.text }]}>On-device</Text>
+                  <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Processing</Text>
+                </View>
+                <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
+                  <Text style={[styles.heroStatValue, { color: colors.text }]}>No sign-in</Text>
+                  <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Required</Text>
+                </View>
+                <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
+                  <Text style={[styles.heroStatValue, { color: colors.text }]}>Real-time</Text>
+                  <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Monitoring</Text>
+                </View>
+              </View>
+            </View>
+          </StaggeredReveal>
+
+          <StaggeredReveal index={1}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.cardHeader}>
+                <MaterialIcons name="flag" size={18} color={colors.accent} />
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Our mission</Text>
+              </View>
+              <Text style={[styles.body, { color: colors.muted }]}>
+                Networks helps people understand internet usage with confidence. We focus on clear
+                numbers, calm design, and insights that are useful in real life.
               </Text>
             </View>
-            <View style={styles.heroStatsRow}>
-              <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
-                <Text style={[styles.heroStatValue, { color: colors.text }]}>On-device</Text>
-                <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Processing</Text>
-              </View>
-              <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
-                <Text style={[styles.heroStatValue, { color: colors.text }]}>No sign-in</Text>
-                <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Required</Text>
-              </View>
-              <View style={[styles.heroStatCard, { backgroundColor: colors.highlight }]}>
-                <Text style={[styles.heroStatValue, { color: colors.text }]}>Real-time</Text>
-                <Text style={[styles.heroStatLabel, { color: colors.muted }]}>Monitoring</Text>
-              </View>
-            </View>
-          </View>
-        </StaggeredReveal>
+          </StaggeredReveal>
 
-        <StaggeredReveal index={1}>
-          <View style={[styles.card, getCardStyle(colors)]}>
-            <View style={styles.cardHeader}>
-              <MaterialIcons name="flag" size={18} color={colors.accent} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Our mission</Text>
-            </View>
-            <Text style={[styles.body, { color: colors.muted }]}>
-              Networks helps people understand internet usage with confidence. We focus on clear
-              numbers, calm design, and insights that are useful in real life.
-            </Text>
-          </View>
-        </StaggeredReveal>
-
-        <StaggeredReveal index={2}>
-          <View style={[styles.card, getCardStyle(colors)]}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Why people trust Networks</Text>
-            {values.map((value, index) => (
-              <View key={value.id} style={[styles.valueRow, index === values.length - 1 ? styles.valueRowLast : null]}>
-                <View style={[styles.valueIcon, { backgroundColor: colors.highlight }]}>
-                  <MaterialIcons name={value.icon} size={16} color={colors.accent} />
+          <StaggeredReveal index={2}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                Why people trust Networks
+              </Text>
+              {values.map((value, index) => (
+                <View
+                  key={value.id}
+                  style={[
+                    styles.valueRow,
+                    { borderBottomColor: colors.stroke },
+                    index === values.length - 1 ? styles.valueRowLast : null,
+                  ]}>
+                  <View style={[styles.valueIcon, { backgroundColor: colors.highlight }]}>
+                    <MaterialIcons name={value.icon} size={16} color={colors.accent} />
+                  </View>
+                  <View style={styles.valueBody}>
+                    <Text style={[styles.valueTitle, { color: colors.text }]}>{value.title}</Text>
+                    <Text style={[styles.valueText, { color: colors.muted }]}>{value.body}</Text>
+                  </View>
                 </View>
-                <View style={styles.valueBody}>
-                  <Text style={[styles.valueTitle, { color: colors.text }]}>{value.title}</Text>
-                  <Text style={[styles.valueText, { color: colors.muted }]}>{value.body}</Text>
+              ))}
+            </View>
+          </StaggeredReveal>
+
+          <StaggeredReveal index={3}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.cardHeader}>
+                <MaterialIcons name="integration-instructions" size={18} color={colors.accent} />
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  What this app includes
+                </Text>
+              </View>
+              <View style={styles.featureGrid}>
+                <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
+                  <MaterialIcons name="speed" size={14} color={colors.accent} />
+                  <Text style={[styles.featureText, { color: colors.muted }]}>
+                    Live speed checks
+                  </Text>
+                </View>
+                <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
+                  <MaterialIcons name="pie-chart-outline" size={14} color={colors.accent} />
+                  <Text style={[styles.featureText, { color: colors.muted }]}>Daily summaries</Text>
+                </View>
+                <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
+                  <MaterialIcons name="apps" size={14} color={colors.accent} />
+                  <Text style={[styles.featureText, { color: colors.muted }]}>Per-app activity</Text>
+                </View>
+                <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
+                  <MaterialIcons name="lock" size={14} color={colors.accent} />
+                  <Text style={[styles.featureText, { color: colors.muted }]}>Local-only data</Text>
                 </View>
               </View>
-            ))}
-          </View>
-        </StaggeredReveal>
+            </View>
+          </StaggeredReveal>
 
-        <StaggeredReveal index={3}>
-          <View style={[styles.card, getCardStyle(colors)]}>
-            <View style={styles.cardHeader}>
-              <MaterialIcons name="integration-instructions" size={18} color={colors.accent} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>What this app includes</Text>
-            </View>
-            <View style={styles.featureGrid}>
-              <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
-                <MaterialIcons name="speed" size={14} color={colors.accent} />
-                <Text style={[styles.featureText, { color: colors.muted }]}>Live speed checks</Text>
+          <StaggeredReveal index={4}>
+            <View style={[styles.card, getCardStyle(colors)]}>
+              <View style={styles.versionRow}>
+                <Text style={[styles.versionLabel, { color: colors.muted }]}>Version</Text>
+                <Text style={[styles.meta, { color: colors.text }]}>1.0.0</Text>
               </View>
-              <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
-                <MaterialIcons name="pie-chart-outline" size={14} color={colors.accent} />
-                <Text style={[styles.featureText, { color: colors.muted }]}>Daily summaries</Text>
-              </View>
-              <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
-                <MaterialIcons name="apps" size={14} color={colors.accent} />
-                <Text style={[styles.featureText, { color: colors.muted }]}>Per-app activity</Text>
-              </View>
-              <View style={[styles.featurePill, { borderColor: colors.stroke }]}>
-                <MaterialIcons name="lock" size={14} color={colors.accent} />
-                <Text style={[styles.featureText, { color: colors.muted }]}>Local-only data</Text>
+              <View style={styles.versionRow}>
+                <Text style={[styles.versionLabel, { color: colors.muted }]}>Support</Text>
+                <Text style={[styles.meta, { color: colors.text }]}>help@networks.app</Text>
               </View>
             </View>
-          </View>
-        </StaggeredReveal>
-
-        <StaggeredReveal index={4}>
-          <View style={[styles.card, getCardStyle(colors)]}>
-            <View style={styles.versionRow}>
-              <Text style={[styles.versionLabel, { color: colors.muted }]}>Version</Text>
-              <Text style={[styles.meta, { color: colors.text }]}>1.0.0</Text>
-            </View>
-            <View style={styles.versionRow}>
-              <Text style={[styles.versionLabel, { color: colors.muted }]}>Support</Text>
-              <Text style={[styles.meta, { color: colors.text }]}>help@networks.app</Text>
-            </View>
-          </View>
-        </StaggeredReveal>
-      </ScrollView>
+          </StaggeredReveal>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -271,7 +283,6 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#A8B2B5',
   },
   valueRowLast: {
     borderBottomWidth: 0,
